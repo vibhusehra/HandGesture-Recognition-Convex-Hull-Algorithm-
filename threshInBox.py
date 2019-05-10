@@ -21,7 +21,7 @@ while True:
 
 	hsv = cv2.cvtColor(blur,cv2.COLOR_BGR2HSV)
 
-	mask = cv2.inRange(hsv,np.array([2,0,0]),np.array([20,255,255]))
+	mask = cv2.inRange(hsv,np.array([2,50,50]),np.array([20,255,255]))
 	
 
 
@@ -31,10 +31,11 @@ while True:
 
 	filtered = cv2.GaussianBlur(mask,(3,3),0)
 	ret,thresh = cv2.threshold(filtered,127,255,0)
+	thesh = cv2.GaussianBlur(thresh,(5,5),0)
 
 	contours,hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
-
+	drawing = np.zeros(roi.shape,np.uint8)
 	try:
 		#finding contour with max area
 		contour = max(contours,key=lambda x: cv2.contourArea(x),default=0)
@@ -47,7 +48,7 @@ while True:
 		#convex hull
 		hull = cv2.convexHull(contour)
 
-		drawing = np.zeros(roi.shape,np.uint8)
+		
 		cv2.drawContours(drawing,[contour],-1,(0,255,0),0)
 		cv2.drawContours(drawing,[hull],-1,(0,0,255),0)
 		
@@ -78,13 +79,26 @@ while True:
 
 			cv2.line(drawing,start,end,[0,255,0],2)
 
+		if count_defects == 0:
+			cv2.putText(frame, "ONE", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 2,(0,0,255),2)
+		elif count_defects == 1:
+			cv2.putText(frame, "TWO", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 2,(0,0,255), 2)
+		elif count_defects == 2:
+			cv2.putText(frame, "THREE", (5, 50), cv2.FONT_HERSHEY_SIMPLEX, 2,(0,0,255), 2)
+		elif count_defects == 3:
+			cv2.putText(frame, "FOUR", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 2,(0,0,255), 2)
+		elif count_defects == 4:
+			cv2.putText(frame, "FIVE", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 2,(0,0,255), 2)
+		else:
+			pass
+
 	except:
 		pass
 	cv2.imshow("thresh",mask)
 	cv2.imshow("drawing",drawing)
 	#ret,thresh1 = cv2.threshold(blur,180,255,cv2.THRESH_BINARY)
 
-	cv2.imshow("img",roi)
+	cv2.imshow("img",frame)
 	#cv2.imshow('img3',erosion)
 	#cv2.imshow('contour',dilation-erosion)
 
