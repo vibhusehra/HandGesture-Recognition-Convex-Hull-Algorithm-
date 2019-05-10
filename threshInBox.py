@@ -2,6 +2,28 @@ import cv2
 import numpy as np
 import math
 
+def imageFiltering(frame):
+
+	roi = frame[y:y+h,x:x+w]
+
+	blur = cv2.GaussianBlur(roi,(5,5),0)
+
+	hsv = cv2.cvtColor(blur,cv2.COLOR_BGR2HSV)
+
+	mask = cv2.inRange(hsv,np.array([2,50,50]),np.array([20,255,255]))
+
+	kernel = np.ones((5,5))
+
+	filtered = cv2.GaussianBlur(mask,(3,3),0)
+	ret,thresh = cv2.threshold(filtered,127,255,0)
+	thesh = cv2.GaussianBlur(thresh,(5,5),0)
+
+	contours,hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+
+	return roi,thresh,contours
+
+
 cap = cv2.VideoCapture(0)
 
 x = 100
@@ -14,35 +36,20 @@ while True:
 
 	cv2.rectangle(frame,(y,x), (y+h,x+w), (0,255,0), 2)
 
-	gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-	roi = frame[y:y+h,x:x+w]
-
-	blur = cv2.GaussianBlur(roi,(5,5),0)
-
-	hsv = cv2.cvtColor(blur,cv2.COLOR_BGR2HSV)
-
-	mask = cv2.inRange(hsv,np.array([2,50,50]),np.array([20,255,255]))
+	#gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+	
 	
 
+	roi,thresh,contours = imageFiltering(frame)
+	
 
-	kernel = np.ones((5,5))
-	#dilation = cv2.dilate(mask,kernel,iterations = 1)
-	#erosion = cv2.erode(dilation,kernel,iterations = 1)
-
-	filtered = cv2.GaussianBlur(mask,(3,3),0)
-	ret,thresh = cv2.threshold(filtered,127,255,0)
-	thesh = cv2.GaussianBlur(thresh,(5,5),0)
-
-	contours,hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+	
 
 	drawing = np.zeros(roi.shape,np.uint8)
 	try:
 		#finding contour with max area
 		contour = max(contours,key=lambda x: cv2.contourArea(x),default=0)
 
-		#bounding box
-		#x,y,w,h = cv2.boundingRect(contour)
-		#cv2.rectangle(roi,(x,y),(x+w,y+h),(0,0,255),0)
 
 
 		#convex hull
@@ -94,13 +101,9 @@ while True:
 
 	except:
 		pass
-	cv2.imshow("thresh",mask)
+	cv2.imshow("thresh",thresh)
 	cv2.imshow("drawing",drawing)
-	#ret,thresh1 = cv2.threshold(blur,180,255,cv2.THRESH_BINARY)
-
 	cv2.imshow("img",frame)
-	#cv2.imshow('img3',erosion)
-	#cv2.imshow('contour',dilation-erosion)
 
 
 
